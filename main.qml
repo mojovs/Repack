@@ -255,6 +255,8 @@ ApplicationWindow{
         id:dialog_set
         visible: false
         taskNum: repack.taskNum
+        //设置默认的路径为选择路径
+        outputPath: repack.filePaths.at[0]
 
     }
 

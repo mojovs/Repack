@@ -169,9 +169,17 @@ QString Repack::newPath(QString path)
         qDebug() << "这个是个文件";
         return nullptr;
     }
+    QString fileName;                       //输出的文件名
     QString baseName = fileInfo.baseName(); //文件名，不包括后缀
-    QString fileName = fileInfo.absolutePath() + "/" + baseName + "_." + fileInfo.suffix();
-
+    //输出路径为空的话,路径设置为文件所在路径
+    if (m_outputDir.isEmpty())
+    {
+        fileName = fileInfo.absolutePath() + "/" + baseName + "_." + fileInfo.suffix();
+    }
+    else
+    {
+        fileName = m_outputDir + baseName + "_." + fileInfo.suffix();
+    }
     return fileName;
 }
 //线程处理完成

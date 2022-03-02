@@ -12,8 +12,8 @@ Window{
     height: 480;
     visible:false
     modality: Qt.WindowModal
-    property var outputPath:"D:/";
-    property var taskNum: 1;//线程数
+    property var outputPath:"";
+    property var taskNum: 2;//线程数
     signal setFinish();
 
     //设置默认路径
@@ -30,6 +30,7 @@ Window{
         }
 
         TextField{
+            id:txtOutputPath
             text:outputPath
             selectByMouse: true
             background:Rectangle {
@@ -83,8 +84,6 @@ Window{
              text: "确定"
              //一旦点击，那么所有的操作都会被确定，且退出设置界面
              onClicked: {
-                 //设置输出路径
-                 outputPath = chose_outputDir.currentFolder
                  //设置任务数
                  taskNum=spinBoxTaskNum.value
                  //发送属性更改信号
@@ -105,8 +104,6 @@ Window{
              id:btnApply
              text:"应用"
              onClicked: {
-                //设置输出路径
-                outputPath = chose_outputDir.currentFolder
                 //设置任务数
                 taskNum=spinBoxTaskNum.value
                 //发送属性更改信号
@@ -121,12 +118,18 @@ Window{
         title: "选择一个文件夹"
         folder: outputPath
         onAccepted: {
+            var curPath =getFilePathFromUrl(folder);
+            txtOutputPath.text= curPath;	//设置输入框文字
+            outputPath = curPath;	//设置属性
         }
     }
 
     function getFilePathFromUrl(iUrl){
-        var str = url(iUrl).toString();
-        return str;
+        var str =iUrl.toString();
+        str=str.replace(/^(file:\/{3})/,"")
+        var cleanPath = decodeURIComponent(str);
+        console.log(cleanPath)
+        return cleanPath;
 
     }
 
