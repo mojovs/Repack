@@ -14,7 +14,6 @@ ApplicationWindow{
     property var filePaths;
     property var folderPaths;
 
-
     //菜单栏
     menuBar:MenuBar {
         //文件选项
@@ -67,8 +66,7 @@ ApplicationWindow{
                     var i=0;
                     for(i=0;i<view.count;i++)
                     {
-                        listModel.setProperty(i,"complete","是")
-
+                        listModel.setProperty(i,"complete","正在打包")
                     }
                 }
             }
@@ -173,9 +171,8 @@ ApplicationWindow{
     Component{
         id:listDelegate
         Item{
-
             id:wrapper
-            width:parent.width
+            width: view.width
             height:30
             //鼠标点击选中当前
             MouseArea{
@@ -212,11 +209,11 @@ ApplicationWindow{
                  }
                  //是否完成打包
                  Text {
-                     text:complete
+                     text:complete;
                      //选中变色及变大
-                     font.pixelSize:wrapper.ListView.isCurrentItem?22:18
-                     color:wrapper.ListView.isCurrentItem?"red":"black"
-                     Layout.preferredWidth: 50
+                     font.pixelSize:wrapper.ListView.isCurrentItem?22:18;
+                     color:wrapper.ListView.isCurrentItem?"red":"black";
+                     Layout.preferredWidth: 50;
 
                  }
             }
@@ -257,7 +254,8 @@ ApplicationWindow{
     {
         id:dialog_set
         visible: false
-        outputPath:repack.outputDir
+        taskNum: repack.taskNum
+
     }
 
     ListModel{
@@ -282,5 +280,24 @@ ApplicationWindow{
     {
        return (String(str).slice(String(str).lastIndexOf("/")+1));
 
+    }
+    //repack处理文件完成，槽
+    Connections{
+        target: repack
+        //槽,文件处理完成，就改变列表，当前状态
+        function onFileNoFinish(n){
+            console.log("完成的文件编号为"+n);
+            listModel.setProperty(n,"complete","是");
+        }
+
+    }
+    //设置属性更改
+    Connections{
+        target:dialog_set
+        function onSetFinish()
+        {
+            repack.taskNum=dialog_set.taskNum
+            repack.outputDir=dialog_set.outputPath
+        }
     }
 }

@@ -7,14 +7,45 @@
 #include <QByteArray>
 #pragma execution_character_set("utf-8")
 #define BLOCK_SIZE 1024 * 1024 * 50
+//读取文件路径
+const QString &FileHandleThread::filePath() const
+{
+    return m_filePath;
+}
+//设置要处理文件路径
+void FileHandleThread::setFilePath(const QString &newFilePath)
+{
+    m_filePath = newFilePath;
+}
+//新建文件路径
+const QString &FileHandleThread::newFilePath() const
+{
+    return m_newFilePath;
+}
+//设置新建文件路径
+void FileHandleThread::setNewFilePath(const QString &newNewFilePath)
+{
+    m_newFilePath = newNewFilePath;
+}
+//构造
+int FileHandleThread::getFileNo() const
+{
+    return fileNo;
+}
 
+void FileHandleThread::setFileNo(int newFileNo)
+{
+    fileNo = newFileNo;
+}
+
+//构造函数
 FileHandleThread::FileHandleThread(QObject *parent) : QThread(parent) {}
-
+//析构
 FileHandleThread::~FileHandleThread()
 {
     delete[] buf; //删除缓冲池
 }
-
+//重载：线程运行
 void FileHandleThread::run()
 {
     buf = new char[BLOCK_SIZE];
@@ -50,6 +81,7 @@ void FileHandleThread::run()
     //关闭文件
     inFile.close();
     outFile.close();
-    //发送拷贝完成的信号
-    emit sig_copyFinished(); //拷贝完成
+
+    //发送处理完成信号
+    emit handleFinished(fileNo);
 }

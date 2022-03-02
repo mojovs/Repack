@@ -6,10 +6,34 @@
 #include <QMessageBox>
 #include <QErrorMessage>
 #include <QThread>
+#include <iostream>
 #include "Repack.h"
 #define MAX_TASK 4
 
-Repack::Repack(QObject *parent) : QObject(parent) {}
+Repack::Repack(QObject *parent) : QObject(parent)
+{
+    //创建线程
+    fThread1 = new FileHandleThread();
+    fThread2 = new FileHandleThread();
+    fThread3 = new FileHandleThread();
+    fThread4 = new FileHandleThread();
+
+    //绑定函数
+    //文件处理完成，发出信号
+    connect(fThread1, SIGNAL(handleFinished(int)), this, SLOT(onThreadFinished(int)));
+    connect(fThread2, SIGNAL(handleFinished(int)), this, SLOT(onThreadFinished(int)));
+    connect(fThread3, SIGNAL(handleFinished(int)), this, SLOT(onThreadFinished(int)));
+    connect(fThread4, SIGNAL(handleFinished(int)), this, SLOT(onThreadFinished(int)));
+}
+//析构
+Repack::~Repack()
+{
+    //删除线程
+    delete fThread1;
+    delete fThread2;
+    delete fThread3;
+    delete fThread4;
+}
 
 QList<QUrl> Repack::fileUrls()
 {
@@ -56,15 +80,83 @@ void Repack::start()
         qDebug() << "filePaths is NULL ";
         return;
     }
-    for (int i = 0; i < m_filePaths.length(); i++)
+    //运行线程
+    runThreadByTask();
+}
+void Repack::runThreadByTask()
+{
+    //一个循环，持续查询哪个线程不在工作，就给哪个线程分配文件处理任务
+    int count = m_filePaths.count(); //总共多少个文件
+    int n     = 0;
+    while (n < count)
     {
-        //获取路径名
-        QString path = m_filePaths.at(i);
-        //创建读写进程
-        fThread.m_filePath    = path;
-        fThread.m_newFilePath = newPath(path);
+        switch (m_taskNum)
+        {
+            //判断线程有没有在运行,空线程,而且还有文件没处理 就接任务
+            case 4:
+                if (!fThread4->isRunning() && n < count)
+                {
+                    //获取文件名
+                    QString path  = m_filePaths.at(n);
+                    QString nPath = newPath(path);
+                    //给线程设置文件名
+                    fThread4->setFilePath(path);
+                    fThread4->setNewFilePath(nPath);
+                    //给线程设置文件序号
+                    fThread4->setFileNo(n);
+                    //运行
+                    fThread4->start();
+                    n++;
+                }
+            case 3:
+                if (!fThread3->isRunning() && n < count)
+                {
+                    //获取文件名
+                    QString path  = m_filePaths.at(n);
+                    QString nPath = newPath(path);
+                    //给线程设置文件名
+                    fThread3->setFilePath(path);
+                    fThread3->setNewFilePath(nPath);
+                    fThread3->setFileNo(n);
+                    //运行
+                    fThread3->start();
+                    n++;
+                }
+            case 2:
+                if (!fThread2->isRunning() && n < count)
+                {
+                    //获取文件名
+                    QString path  = m_filePaths.at(n);
+                    QString nPath = newPath(path);
+                    //给线程设置文件名
+                    fThread2->setFilePath(path);
+                    fThread2->setNewFilePath(nPath);
+                    fThread2->setFileNo(n);
+                    //运行
+                    fThread2->start();
+                    n++;
+                }
+            case 1:
+                if (!fThread1->isRunning() && n < count)
+                {
+                    //获取文件名
+                    QString path  = m_filePaths.at(n);
+                    QString nPath = newPath(path);
+                    //给线程设置文件名
+                    fThread1->setFilePath(path);
+                    fThread1->setNewFilePath(nPath);
+                    fThread1->setFileNo(n);
+                    //运行
+                    fThread1->start();
+                    n++;
+                }
+                break;
+        }
 
-        fThread.start();
+        //线程满了，睡眠
+        QThread::msleep(50);
+        std::cout << "+";
+        std::cout << "处理完成\n";
     }
 }
 
@@ -81,6 +173,11 @@ QString Repack::newPath(QString path)
     QString fileName = fileInfo.absolutePath() + "/" + baseName + "_." + fileInfo.suffix();
 
     return fileName;
+}
+//线程处理完成
+void Repack::onThreadFinished(int n)
+{
+    emit fileNoFinish(n);
 }
 
 void Repack::setOutputDir(QString path)
@@ -102,5 +199,27 @@ void Repack::setOutputDir(QString path)
     {
         qDebug() << "Path is not a Dir";
         return;
+    }
+}
+
+int Repack::taskNum()
+{
+    return m_taskNum;
+}
+
+void Repack::setTaskNum(int num)
+{
+    //最大四个任务
+    if (num > 4)
+    {
+        m_taskNum = 4;
+    }
+    else if (num > 0 && num <= 4)
+    {
+        m_taskNum = num;
+    }
+    else
+    {
+        m_taskNum = 1; //默认一个任务线程
     }
 }
