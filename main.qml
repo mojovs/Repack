@@ -268,14 +268,24 @@ ApplicationWindow{
             complete:"否"
         }
     }
-    //系统托盘图标设置
-    SystemTrayIcon{
-        id:trayIcon
-        iconSource: "res/shark.ico"
-        tooltip:"打开"
-        visible:false
-        onActivated:{ root.show() }
-    }
+  //  //系统托盘图标设置
+  //  SystemTrayIcon{
+  //      id:trayIcon
+  //      iconSource: "res/shark.ico"
+  //      tooltip:"打开"
+  //      visible:false
+  //      menu: Menu{
+  //          MenuItem{
+  //              text:"退出"
+  //              onClicked: {
+  //                  root.close()
+  //              }
+  //          }
+
+  //      }
+
+  //      onActivated:{ root.show() }
+  //  }
 
     //从一串字符获取文件名称，包括扩展名
     function getFileName(str)

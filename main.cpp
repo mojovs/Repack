@@ -30,6 +30,5 @@ int main(int argc, char *argv[])
     engine.load(url);
 
     //任务托盘
-
     return app.exec();
 }
